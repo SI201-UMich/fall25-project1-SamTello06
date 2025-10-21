@@ -30,15 +30,18 @@ def frequent_category_per_state(d):
     # the most frequent category in that state
 
     # creates a dict with states and categories and their counts
+    #takes into account the 'Quantity' column
     state_cat = {}
     for i in range(len(d['State'])):
         state = d['State'][i]
         category = d['Category'][i]
+        quant = int(d['Quantity'][i])
         if state not in state_cat:
             state_cat[state] = {}
         if category not in state_cat[state]:
-            state_cat[state][category] = 0
-        state_cat[state][category] += 1
+            state_cat[state][category] = quant
+        else:
+            state_cat[state][category] += quant
 
     # finds the category with the largest count in each state 
     # and returns a dict with state and frequent category
@@ -55,29 +58,44 @@ def frequent_category_per_state(d):
     return result
 
 
-def avg_sales_per_category(d):
+def highest_avg_sale_subcategory_per_region(d):
     # takes in nested dict from load_csv
-    # returns a dict where keys are categories and values are 
-    # the average sales for that category
+    # returns a dict where keys are region and values are 
+    # the subcategory with the highest average sale in that region
 
-    # creates a dict with categories and their total sales and counts
-    cat_sales = {}
-    for i in range(len(d['Category'])):
-        category = d['Category'][i]
-        sales = float(d['Sales'][i])
-        if category not in cat_sales:
-            cat_sales[category] = {'total_sales': 0, 'count': 0}
-        cat_sales[category]['total_sales'] += sales
-        cat_sales[category]['count'] += 1
+    # creates a nested dict with regions and subcategories 
+    # and their total sales and counts
+    region_subcat = {}
+    for i in range(len(d['Region'])):
+        region = d['Region'][i]
+        subcat = d['Sub-Category'][i]
+        sale = float(d['Sales'][i])
 
-    # calculates the average sales for each category
+        if region not in region_subcat:
+            region_subcat[region] = {}
+        if subcat not in region_subcat[region]:
+            region_subcat[region][subcat] = {'total_sales': 0, 'count': 0}
+
+        region_subcat[region][subcat]['total_sales'] += sale
+        region_subcat[region][subcat]['count'] += 1
+
+
+    # finds the subcategory with the largest avg in each region 
+    # and returns a dict with region and subcategory
     result = {}
-    for category in cat_sales:
-        total_sales = cat_sales[category]['total_sales']
-        count = cat_sales[category]['count']
-        avg_sales = total_sales / count
-        result[category] = avg_sales
+    for reg in region_subcat:
+        max_avg = 0
+        max_subcat = ''
+        for subcat in region_subcat[reg]:
+            total_sales = region_subcat[reg][subcat]['total_sales']
+            count = region_subcat[reg][subcat]['count']
+            avg_sale = total_sales / count
+            if avg_sale > max_avg:
+                max_avg = avg_sale
+                max_subcat = subcat
+        result[reg] = max_subcat
     return result
+
 
 def write_results(d, f):
     #takes in dict and writes to txt file
@@ -93,6 +111,29 @@ class TestProject1(unittest.TestCase):
         self.superstore_dict = load_results('SampleSuperstore.csv')
         self.empty_dict = {'State': [], 'Category': [], 'Sales': []}
     
+    def test_frequent_category_per_state_general(self):
+        result = frequent_category_per_state(self.superstore_dict)
+        self.assertEqual(result['California'], 'Office Supplies')
+        self.assertEqual(result['Texas'], 'Office Supplies')
+    def test_frequent_category_per_state_edge(self):
+        result = frequent_category_per_state(self.empty_dict)
+        self.assertEqual(result, {})
+        single_entry_dict = {'State': ['California'], 'Category': ['Furniture'], 'Sales': ['100']}
+        result = frequent_category_per_state(single_entry_dict)
+        self.assertEqual(result, {'California': 'Furniture'})
+    def test_highest_avg_sale_subcategory_per_region_general(self):
+        result = highest_avg_sale_subcategory_per_region(self.superstore_dict)
+        self.assertEqual(result['South'], 'Machines')
+        self.assertEqual(result['East'], 'Copiers')
+    def test_highest_avg_sale_subcategory_per_region_edge(self):
+        result = highest_avg_sale_subcategory_per_region(self.empty_dict)
+        self.assertEqual(result, {})
+        single_entry_dict = {'Region': ['West'], 'Sub-Category': ['Tables'], 'Sales': ['200']}
+        result = highest_avg_sale_subcategory_per_region(single_entry_dict)
+        self.assertEqual(result, {'West': 'Tables'})
+    
+
+
 
 
 def main():
@@ -111,7 +152,7 @@ def main():
         fh.write("--------------------------\n")
 
     #calls function and writes data to output.txt
-    write_results(avg_sales_per_category(load_results('SampleSuperstore.csv')), 'output.txt')
+    write_results(highest_avg_sale_subcategory_per_region(load_results('SampleSuperstore.csv')), 'output.txt')
 
 
     #call tests

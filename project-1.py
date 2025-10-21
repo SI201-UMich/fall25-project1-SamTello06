@@ -108,32 +108,88 @@ def write_results(d, f):
 #unit tests (2 general cases and 2 edge cases per function)
 class TestProject1(unittest.TestCase):
     def setUp(self):
-        self.superstore_dict = load_results('SampleSuperstore.csv')
-        self.empty_dict = {'State': [], 'Category': [], 'Sales': []}
-    
-    def test_frequent_category_per_state_general(self):
-        result = frequent_category_per_state(self.superstore_dict)
+        # Main dataset for general tests
+        self.data = {
+            'State': ['California', 'California', 'Texas', 'Texas', 'Florida', 'Florida'],
+            'Category': ['Furniture', 'Office Supplies', 'Furniture', 'Office Supplies', 'Technology', 'Furniture'],
+            'Quantity': ['3', '10', '2', '5', '4', '1'],
+            'Region': ['West', 'West', 'Central', 'Central', 'South', 'South'],
+            'Sub-Category': ['Chairs', 'Paper', 'Tables', 'Phones', 'Machines', 'Chairs'],
+            'Sales': ['300', '120', '250', '500', '1000', '200']
+        }
+
+        # Empty data for edge tests
+        self.empty_dict = {
+            'State': [], 'Category': [], 'Quantity': [],
+            'Region': [], 'Sub-Category': [], 'Sales': []
+        }
+
+    #  frequent_category_per_state 
+    def test_frequent_category_per_state_general_case1(self):
+
+        result = frequent_category_per_state(self.data)
+       
         self.assertEqual(result['California'], 'Office Supplies')
         self.assertEqual(result['Texas'], 'Office Supplies')
-    def test_frequent_category_per_state_edge(self):
+        self.assertEqual(result['Florida'], 'Technology')
+
+    def test_frequent_category_per_state_general_case2(self):
+        data_tie = {
+            'State': ['Nevada', 'Nevada'],
+            'Category': ['Furniture', 'Technology'],
+            'Quantity': ['5', '5'],
+            'Region': ['West', 'West'],
+            'Sub-Category': ['Chairs', 'Phones'],
+            'Sales': ['200', '300']
+        }
+        result = frequent_category_per_state(data_tie)
+        self.assertIn(result['Nevada'], ['Furniture', 'Technology'])
+
+    def test_frequent_category_per_state_edge_case1(self):
         result = frequent_category_per_state(self.empty_dict)
         self.assertEqual(result, {})
-        single_entry_dict = {'State': ['California'], 'Category': ['Furniture'], 'Sales': ['100']}
-        result = frequent_category_per_state(single_entry_dict)
-        self.assertEqual(result, {'California': 'Furniture'})
-    def test_highest_avg_sale_subcategory_per_region_general(self):
-        result = highest_avg_sale_subcategory_per_region(self.superstore_dict)
+
+    def test_frequent_category_per_state_edge_case2(self):
+        single_entry = {
+            'State': ['Oregon'], 'Category': ['Furniture'], 'Quantity': ['1'],
+            'Region': ['West'], 'Sub-Category': ['Chairs'], 'Sales': ['50']
+        }
+        result = frequent_category_per_state(single_entry)
+        self.assertEqual(result, {'Oregon': 'Furniture'})
+
+    #  highest_avg_sale_subcategory_per_region 
+    def test_highest_avg_sale_subcategory_per_region_general_case1(self):
+        result = highest_avg_sale_subcategory_per_region(self.data)
+        
+
+        self.assertEqual(result['West'], 'Chairs')
+        self.assertEqual(result['Central'], 'Phones')
         self.assertEqual(result['South'], 'Machines')
-        self.assertEqual(result['East'], 'Copiers')
-    def test_highest_avg_sale_subcategory_per_region_edge(self):
+
+    def test_highest_avg_sale_subcategory_per_region_general_case2(self):
+        data_multi = {
+            'Region': ['East', 'East', 'East', 'East'],
+            'Sub-Category': ['Phones', 'Phones', 'Tables', 'Tables'],
+            'Sales': ['100', '300', '200', '200'],
+            'State': [], 'Category': [], 'Quantity': []
+        }
+        result = highest_avg_sale_subcategory_per_region(data_multi)
+
+        self.assertIn(result['East'], ['Phones', 'Tables'])
+
+    def test_highest_avg_sale_subcategory_per_region_edge_case1(self):
+
         result = highest_avg_sale_subcategory_per_region(self.empty_dict)
         self.assertEqual(result, {})
-        single_entry_dict = {'Region': ['West'], 'Sub-Category': ['Tables'], 'Sales': ['200']}
-        result = highest_avg_sale_subcategory_per_region(single_entry_dict)
-        self.assertEqual(result, {'West': 'Tables'})
-    
 
+    def test_highest_avg_sale_subcategory_per_region_edge_case2(self):
 
+        single_entry = {
+            'Region': ['Midwest'], 'Sub-Category': ['Copiers'], 'Sales': ['900'],
+            'State': [], 'Category': [], 'Quantity': []
+        }
+        result = highest_avg_sale_subcategory_per_region(single_entry)
+        self.assertEqual(result, {'Midwest': 'Copiers'})
 
 
 def main():

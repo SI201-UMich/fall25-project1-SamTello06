@@ -204,7 +204,7 @@ def main():
     
     #writes out a header for output file that says "Average Sales per Category"
     with open('output.txt', 'a') as fh:
-        fh.write("\nAverage Sales per Category\n")
+        fh.write("\nSubcategory With Highest Average Sales Per Region\n")
         fh.write("--------------------------\n")
 
     #calls function and writes data to output.txt
